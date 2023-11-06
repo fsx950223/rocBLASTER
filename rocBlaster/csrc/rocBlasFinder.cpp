@@ -30,6 +30,8 @@
 #include <pybind11/pybind11.h>
 #include <string.h>
 #include <vector>
+#include <stdio.h>
+#include <stdlib.h>
 
 struct MNK {
   std::string ta;
@@ -64,13 +66,14 @@ private:
   using a_t = _Float16;
   using b_t = _Float16;
   using c_t = _Float16;
-
+  FILE* fp;
   rocblas_handle handle;
   hipStream_t stream;
 
 public:
   rocBlasFinder(int deviceId) {
     // TODO: Setup dtype, device, ect.
+    fp = fopen("./optimize.csv", "a+");
     CHECK_HIP_ERROR(hipSetDevice(deviceId));
 
     CHECK_HIP_ERROR(hipStreamCreateWithFlags(&stream, hipStreamNonBlocking));
@@ -79,7 +82,9 @@ public:
 
     CHECK_ROCBLAS_ERROR(rocblas_set_stream(handle, stream));
   }
+
   ~rocBlasFinder() {
+    fclose(fp);
     rocblas_destroy_handle(handle);
     hipStreamDestroy(stream);
   }
@@ -254,6 +259,7 @@ public:
       }
     }
     ave_time = bestTime / hot_calls;
+    fprintf(fp, "\n%s,%s,%d,%d,%d,%d,%f,%f,%d,%f", GEMM_size.ta.c_str(), GEMM_size.tb.c_str(), GEMM_size.m, GEMM_size.n, GEMM_size.k, size, ave_time_default, ave_time, bestSol, (ave_time_default - ave_time) / ave_time_default);
     printf(R"(
       TransA: %s, TransB: %s, M: %d, N: %d, K: %d
       %d solution(s) found
@@ -451,6 +457,7 @@ public:
       }
     }
     ave_time = bestTime / hot_calls;
+    
     printf(R"(
       TransA: %s, TransB: %s, M: %d, N: %d, K: %d
       %d solution(s) found
