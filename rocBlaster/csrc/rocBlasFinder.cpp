@@ -413,7 +413,6 @@ public:
     time *= 1000;
 
     ave_time_default = time / hot_calls;
-    std::cout << "Default time: " << ave_time_default << " us" << std::endl;
 
     // Benchmark loop
     float bestTime = std::numeric_limits<float>::max();
@@ -457,7 +456,7 @@ public:
       }
     }
     ave_time = bestTime / hot_calls;
-    
+    fprintf(fp, "\n%s,%s,%d,%d,%d,%d,%f,%f,%d,%f", GEMM_size.ta.c_str(), GEMM_size.tb.c_str(), GEMM_size.m, GEMM_size.n, GEMM_size.k, size, ave_time_default, ave_time, bestSol, (ave_time_default - ave_time) / ave_time_default);
     printf(R"(
       TransA: %s, TransB: %s, M: %d, N: %d, K: %d
       %d solution(s) found

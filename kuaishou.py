@@ -283,14 +283,26 @@ def main():
     print(f"{os.linesep}{'>'*20:<20}{' rocBlas Output ':^20}{'<'*20:>20}{os.linesep}")
     # gemms = executable.get_unique_gemms()
     with open('./optimize.csv', 'w') as f:
-        f.write('transA,transB,M,N,K,solutions,Default time,Winner time,best sol,Improved')
-    gemms_args = [(2048, 3072, 8192), (2048, 1024, 8192), (2048, 5504, 8192), (2048, 8192, 2752)]
-    for i in range(1, 21):
-        gemms_args.append((i, 8192, 1024))
-        gemms_args.append((i, 2752, 8192))
+        f.write('transA,transB,M,N,K,solutions,Default time(ns),Winner time(ns),best sol,Improved')
+    # gemms_args = [(2048, 3072, 8192), (2048, 1024, 8192), (2048, 5504, 8192), (2048, 8192, 2752)]
+    gemms_args = [(15000,1,32), (15000,1,128), (15000,3,1024), (15000,32,64), (15000,8,32), (15000,64,128), (1, 256, 3), (15000,512,1024)]
+    # for i in range(1, 21):
+    # for i in range(1, 2):
+    #     gemms_args.append((i, 8192, 1024))
+    #     gemms_args.append((i, 2752, 8192))
     gemms = []
-    for m, n, k in gemms_args:
-        gemms.append(GEMM(f"./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m {m} -n {n} -k {k} --alpha 1 --a_type bf16_r --lda 4096 --b_type bf16_r --ldb 4096 --beta 0 --c_type bf16_r --ldc 4096 --d_type bf16_r --ldd 4096 --compute_type f32_r --algo 0 --solution_index 0 --flags 0"))
+    # for m, n, k in gemms_args:
+        # gemms.append(GEMM(f"./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m {m} -n {n} -k {k} --alpha 1 --a_type bf16_r --lda 4096 --b_type bf16_r --ldb 4096 --beta 0 --c_type bf16_r --ldc 4096 --d_type bf16_r --ldd 4096 --compute_type f32_r --algo 0 --solution_index 0 --flags 0"))
+
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 1 -n 15000 -k 32 --alpha 1 --a_type bf16_r --lda 1 --b_type bf16_r --ldb 32 --beta 0 --c_type bf16_r --ldc 1 --d_type bf16_r --ldd 1 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 1 -n 15000 -k 128 --alpha 1 --a_type bf16_r --lda 1 --b_type bf16_r --ldb 128 --beta 0 --c_type bf16_r --ldc 1 --d_type bf16_r --ldd 1 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 3 -n 15000 -k 1024 --alpha 1 --a_type bf16_r --lda 3 --b_type bf16_r --ldb 1024 --beta 0 --c_type bf16_r --ldc 3 --d_type bf16_r --ldd 3 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 32 -n 15000 -k 64 --alpha 1 --a_type bf16_r --lda 32 --b_type bf16_r --ldb 64 --beta 0 --c_type bf16_r --ldc 32 --d_type bf16_r --ldd 32 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 8 -n 15000 -k 32 --alpha 1 --a_type bf16_r --lda 8 --b_type bf16_r --ldb 32 --beta 0 --c_type bf16_r --ldc 8 --d_type bf16_r --ldd 8 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 64 -n 15000 -k 128 --alpha 1 --a_type bf16_r --lda 64 --b_type bf16_r --ldb 128 --beta 0 --c_type bf16_r --ldc 64 --d_type bf16_r --ldd 64 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_strided_batched_ex --transposeA N --transposeB N -m 256 -n 1 -k 3 --alpha 1 --a_type bf16_r --lda 256 --stride_a 768 --b_type bf16_r --ldb 3 --stride_b 3 --beta 0 --c_type bf16_r --ldc 256 --stride_c 256 --d_type bf16_r --ldd 256 --stride_d 256 --batch_count 15000 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+    gemms.append(GEMM('./rocblas-bench -f gemm_ex --transposeA N --transposeB N -m 512 -n 15000 -k 1024 --alpha 1 --a_type bf16_r --lda 512 --b_type bf16_r --ldb 1024 --beta 0 --c_type bf16_r --ldc 512 --d_type bf16_r --ldd 512 --compute_type f32_r --algo 0 --solution_index 0 --flags 0'))
+        # gemms.append(GEMM(f"./rocblas-bench -f gemm_strided_batched_ex --transposeA N --transposeB N -m {m} -n {n} -k {k} --alpha 1 --a_type bf16_r --lda 4096 --b_type bf16_r --ldb 4096 --beta 0 --c_type bf16_r --ldc 4096 --d_type bf16_r --ldd 4096 --compute_type f32_r --algo 0 --solution_index 0 --flags 0"))
     if args.show_gemms:
         print(f"Got unique gemms {gemms}")
 
